@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const userSchema = new mongoose.Schema({
-  name: {
+  fullName: {
     type: String,
     required: true,
     trim: true,
@@ -19,15 +19,24 @@ const userSchema = new mongoose.Schema({
       "Please add a valid email",
     ],
   },
+  phoneNumber: {
+    type: String,
+    required: true,
+  },
+  role: {
+    type: String,
+    enum: ["customer", "host"],
+    default: "customer",
+  },
   password: {
     type: String,
     required: [true, "Please add a password"],
     minlength: 6,
-    select: false, // Don't include password in queries by default
+    select: false,
   },
 });
 
-// Encrypt password using bcrypt before saving
+// Encrypt password
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     next();
@@ -36,14 +45,14 @@ userSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-// Sign JWT and return
+// Generate JWT
 userSchema.methods.getSignedJwtToken = function () {
   return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE,
   });
 };
 
-// Match user entered password to hashed password in database
+// Compare password
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
