@@ -11,7 +11,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const errorHandler = require("./middleware/errorHandler");
 const app = express();
-
+const mediaRoutes = require("./routes/media_route");
 // Load environment variables
 dotenv.config({ path: "./config/config.env" });
 
@@ -95,7 +95,7 @@ app.use(express.static(path.join(__dirname, "public")));
 const userRoutes = require("./routes/user_route");
 app.use("/api/v1/users/login", authLimiter); // stricter rate limit for login
 app.use("/api/v1/users", userRoutes);
-
+app.use("/api/v1/media", mediaRoutes);
 // Error handling middleware
 app.use(errorHandler);
 
